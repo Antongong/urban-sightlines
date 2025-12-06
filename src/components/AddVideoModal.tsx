@@ -70,8 +70,11 @@ export function AddVideoModal({ open, onClose, onAdd, isAnalyzing = false, isVSS
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && !isAnalyzing && resetAndClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby="add-video-description">
         <DialogHeader>
+          <p id="add-video-description" className="sr-only">
+            Add a new video source by uploading a video file or connecting a live stream
+          </p>
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
               <Video className="w-5 h-5 text-primary" />
