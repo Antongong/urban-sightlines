@@ -1,15 +1,17 @@
-import { Search, Radio, Settings } from 'lucide-react';
+import { Search, Radio, Settings, Wifi, WifiOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 interface NavbarProps {
   environment: 'demo' | 'production';
   onEnvironmentChange: (env: 'demo' | 'production') => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  isVSSConnected?: boolean;
 }
 
-export function Navbar({ environment, onEnvironmentChange, searchQuery, onSearchChange }: NavbarProps) {
+export function Navbar({ environment, onEnvironmentChange, searchQuery, onSearchChange, isVSSConnected = false }: NavbarProps) {
   return (
     <header className="h-14 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-4 sticky top-0 z-50">
       <div className="flex items-center gap-3">
@@ -21,6 +23,26 @@ export function Navbar({ environment, onEnvironmentChange, searchQuery, onSearch
             Urban Wildlife Watch
           </h1>
         </div>
+        
+        <Badge 
+          variant="outline" 
+          className={isVSSConnected 
+            ? 'border-success/50 text-success bg-success/10' 
+            : 'border-muted-foreground/50 text-muted-foreground bg-muted/10'
+          }
+        >
+          {isVSSConnected ? (
+            <>
+              <Wifi className="w-3 h-3 mr-1" />
+              NVIDIA VSS
+            </>
+          ) : (
+            <>
+              <WifiOff className="w-3 h-3 mr-1" />
+              VSS Offline
+            </>
+          )}
+        </Badge>
       </div>
 
       <div className="flex items-center gap-4">
