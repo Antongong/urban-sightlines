@@ -39,12 +39,6 @@ export function useVSSAnalysis() {
     setState(prev => ({ ...prev, isAnalyzing: true, error: null }));
     
     try {
-      // First check if VSS is available
-      const isConnected = await checkVSSHealth();
-      if (!isConnected) {
-        throw new Error('VSS backend is not available. Please ensure the NVIDIA VSS service is running.');
-      }
-
       toast({
         title: 'Uploading video...',
         description: 'Sending video to VSS for wildlife analysis',
@@ -83,6 +77,14 @@ export function useVSSAnalysis() {
         ...prev,
         isAnalyzing: false,
         error: errorMessage,
+        lastAnalysis: {
+          fileId: 'error',
+          summary: `VSS Analysis Failed: ${errorMessage}`,
+          wildlifeDetected: false,
+          animalType: null,
+          timestamp: new Date(),
+          rawResponse: { id: '', object: '', created: 0, model: '', choices: [] },
+        },
       }));
 
       toast({

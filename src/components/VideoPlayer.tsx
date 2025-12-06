@@ -212,34 +212,57 @@ export function VideoPlayer({ source, detections, lastAnalysis, isAnalyzing = fa
       />
 
       {/* VSS Analysis Output */}
-      {lastAnalysis && !isAnalyzing && source?.type === 'uploaded' && (
-        <div className={cn(
-          "rounded-lg p-4 border",
-          lastAnalysis.wildlifeDetected 
-            ? "border-warning bg-warning/5" 
-            : "border-success bg-success/5"
-        )}>
-          <div className="flex items-start gap-3">
-            {lastAnalysis.wildlifeDetected ? (
-              <CheckCircle2 className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
-            ) : (
-              <XCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold">
-                {lastAnalysis.wildlifeDetected 
-                  ? `Wildlife Detected${lastAnalysis.animalType ? `: ${lastAnalysis.animalType}` : ''}`
-                  : 'No Wildlife Detected'
-                }
-              </p>
-              <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">
-                {lastAnalysis.summary}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
+      {source?.type === 'uploaded' && (
+        <div className="rounded-lg border border-border bg-card p-4">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary" />
+            VSS Analysis Output
+          </h3>
+          
+          {isAnalyzing ? (
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm">Sending video to VSS for analysis...</span>
+            </div>
+          ) : lastAnalysis ? (
+            <div className="space-y-3">
+              <div className={cn(
+                "rounded-md p-3 border",
+                lastAnalysis.wildlifeDetected 
+                  ? "border-warning bg-warning/10" 
+                  : "border-success bg-success/10"
+              )}>
+                <div className="flex items-center gap-2">
+                  {lastAnalysis.wildlifeDetected ? (
+                    <CheckCircle2 className="w-4 h-4 text-warning" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-success" />
+                  )}
+                  <span className="text-sm font-medium">
+                    {lastAnalysis.wildlifeDetected 
+                      ? `Wildlife Detected${lastAnalysis.animalType ? `: ${lastAnalysis.animalType}` : ''}`
+                      : 'No Wildlife Detected'
+                    }
+                  </span>
+                </div>
+              </div>
+              
+              <div className="bg-secondary/50 rounded-md p-3">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Full Response:</p>
+                <p className="text-sm whitespace-pre-wrap font-mono">
+                  {lastAnalysis.summary}
+                </p>
+              </div>
+              
+              <p className="text-xs text-muted-foreground">
                 Analyzed at {lastAnalysis.timestamp.toLocaleTimeString()}
               </p>
             </div>
-          </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No analysis results yet. Upload a video to analyze it for wildlife.
+            </p>
+          )}
         </div>
       )}
     </div>
