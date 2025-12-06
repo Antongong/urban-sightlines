@@ -1,17 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize2 } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize2, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Detection, VideoSource } from '@/types';
 import { DetectionTimeline } from './DetectionTimeline';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { VSSAnalysisResult } from '@/services/vssApi';
 
 interface VideoPlayerProps {
   source: VideoSource | null;
   detections: Detection[];
+  lastAnalysis?: VSSAnalysisResult | null;
+  isAnalyzing?: boolean;
 }
 
-export function VideoPlayer({ source, detections }: VideoPlayerProps) {
+export function VideoPlayer({ source, detections, lastAnalysis, isAnalyzing = false }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -124,6 +127,50 @@ export function VideoPlayer({ source, detections }: VideoPlayerProps) {
               />
             </div>
           </>
+        )}
+
+        {/* VSS Analysis Status Overlay */}
+        {isAnalyzing && (
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10">
+            <div className="text-center space-y-3">
+              <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
+              <div>
+                <p className="text-lg font-medium">Analyzing Video</p>
+                <p className="text-sm text-muted-foreground">NVIDIA VSS is scanning for wildlife...</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Analysis Result Overlay */}
+        {lastAnalysis && !isAnalyzing && source?.type === 'uploaded' && (
+          <div className="absolute top-14 left-3 right-3 z-10">
+            <div className={cn(
+              "glass rounded-lg px-4 py-3 border",
+              lastAnalysis.wildlifeDetected 
+                ? "border-warning bg-warning/10" 
+                : "border-success bg-success/10"
+            )}>
+              <div className="flex items-start gap-3">
+                {lastAnalysis.wildlifeDetected ? (
+                  <CheckCircle2 className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
+                ) : (
+                  <XCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">
+                    {lastAnalysis.wildlifeDetected 
+                      ? `🦌 Wildlife Detected${lastAnalysis.animalType ? `: ${lastAnalysis.animalType}` : ''}`
+                      : 'No Wildlife Detected'
+                    }
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                    {lastAnalysis.summary}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Camera info overlay */}
