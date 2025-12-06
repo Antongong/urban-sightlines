@@ -58,21 +58,14 @@ const Index = () => {
 
   // Update alerts and analysis when we get VSS results
   useEffect(() => {
-    if (lastAnalysis && lastAnalysis.wildlifeDetected && lastAnalysis.animalType) {
-      // Extract animal type from the analysis
-      const detectedAnimal = lastAnalysis.animalType.toLowerCase();
-      
-      // Map to a valid AnimalType, default to 'deer' if unknown
-      const validAnimals: AnimalType[] = ['deer', 'boar', 'bear', 'moose', 'fox'];
-      const animalType: AnimalType = validAnimals.find(a => detectedAnimal.includes(a)) || 'deer';
-      
+    if (lastAnalysis && lastAnalysis.wildlifeDetected) {
       const newAlert: Alert = {
         id: `vss-${Date.now()}`,
         sourceId: 'vss-analysis',
-        sourceName: selectedSource?.name || 'VSS Analysis',
-        animalType: animalType,
-        riskLevel: 'High',
-        description: `${lastAnalysis.animalType} detected in video feed`,
+        sourceName: 'VSS Analysis',
+        animalType: (lastAnalysis.animalType as AnimalType) || 'deer',
+        riskLevel: 'Medium',
+        description: lastAnalysis.summary.substring(0, 150),
         timestamp: lastAnalysis.timestamp,
       };
       
@@ -82,11 +75,10 @@ const Index = () => {
       setAnalysisSummary(prev => ({
         ...prev,
         totalDetections: prev.totalDetections + 1,
-        mostCommonAnimal: animalType,
         summary: lastAnalysis.summary,
       }));
     }
-  }, [lastAnalysis, selectedSource]);
+  }, [lastAnalysis]);
 
   const handleAddSource = async (source: { 
     name: string; 

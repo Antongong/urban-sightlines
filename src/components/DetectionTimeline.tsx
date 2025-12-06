@@ -21,7 +21,7 @@ export function DetectionTimeline({ detections, duration, currentTime, onSeek }:
 
   return (
     <div className="bg-card rounded-lg p-3 border border-border">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-2">
         <span className="text-xs font-mono text-muted-foreground">{formatTime(currentTime)}</span>
         <div className="flex-1 relative h-8">
           {/* Timeline track */}
@@ -70,6 +70,22 @@ export function DetectionTimeline({ detections, duration, currentTime, onSeek }:
           />
         </div>
         <span className="text-xs font-mono text-muted-foreground">{formatTime(duration)}</span>
+      </div>
+
+      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-destructive" />
+          <span>High Risk</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-warning" />
+          <span>Medium</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-success" />
+          <span>Low</span>
+        </div>
+        <span className="ml-auto">{detections.length} detections</span>
       </div>
     </div>
   );
