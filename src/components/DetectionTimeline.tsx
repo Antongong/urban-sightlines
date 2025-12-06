@@ -72,20 +72,8 @@ export function DetectionTimeline({ detections, duration, currentTime, onSeek }:
         <span className="text-xs font-mono text-muted-foreground">{formatTime(duration)}</span>
       </div>
 
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-destructive" />
-          <span>High Risk</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-warning" />
-          <span>Medium</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-success" />
-          <span>Low</span>
-        </div>
-        <span className="ml-auto">{detections.length} detections</span>
+      <div className="flex items-center justify-end text-xs text-muted-foreground">
+        <span>{detections.length} detections</span>
       </div>
     </div>
   );
