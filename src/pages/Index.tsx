@@ -89,12 +89,13 @@ const Index = () => {
       url: source.url,
     };
 
-    // If VSS is connected and we have a file, analyze it
-    if (isVSSConnected && source.file && source.type === 'uploaded') {
-      setSources((prev) => [...prev, newSource]);
-      setSelectedSourceId(newSource.id);
-      
-      // Trigger VSS analysis
+    // Add source and select it
+    setSources((prev) => [...prev, newSource]);
+    setSelectedSourceId(newSource.id);
+
+    // Always attempt VSS analysis for uploaded videos with a file
+    if (source.file && source.type === 'uploaded') {
+      // Trigger VSS analysis (will show error toast if VSS is offline)
       const result = await analyzeVideo(source.file);
       
       if (result) {
@@ -107,11 +108,8 @@ const Index = () => {
       }
       
       setIsAddModalOpen(false);
-    } else if (isVSSConnected && source.type === 'live' && source.url) {
-      // For live streams, connect to VSS monitoring
-      setSources((prev) => [...prev, newSource]);
-      setSelectedSourceId(newSource.id);
-      
+    } else if (source.type === 'live' && source.url) {
+      // For live streams, try to connect to VSS monitoring
       const streamId = await analyzeLiveStream(source.url, source.name);
       
       if (streamId) {
@@ -124,18 +122,7 @@ const Index = () => {
       
       setIsAddModalOpen(false);
     } else {
-      // No VSS connection - just add the source locally
-      setSources((prev) => [...prev, newSource]);
-      setSelectedSourceId(newSource.id);
       setIsAddModalOpen(false);
-      
-      if (!isVSSConnected && environment === 'production') {
-        toast({
-          title: 'VSS Not Connected',
-          description: 'Video added locally. Connect to NVIDIA VSS for wildlife analysis.',
-          variant: 'default',
-        });
-      }
     }
   };
 
