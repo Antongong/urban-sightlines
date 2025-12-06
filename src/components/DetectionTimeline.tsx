@@ -21,7 +21,7 @@ export function DetectionTimeline({ detections, duration, currentTime, onSeek }:
 
   return (
     <div className="bg-card rounded-lg p-3 border border-border">
-      <div className="flex items-center gap-3 mb-2">
+      <div className="flex items-center gap-3">
         <span className="text-xs font-mono text-muted-foreground">{formatTime(currentTime)}</span>
         <div className="flex-1 relative h-8">
           {/* Timeline track */}
@@ -70,10 +70,6 @@ export function DetectionTimeline({ detections, duration, currentTime, onSeek }:
           />
         </div>
         <span className="text-xs font-mono text-muted-foreground">{formatTime(duration)}</span>
-      </div>
-
-      <div className="flex items-center justify-end text-xs text-muted-foreground">
-        <span>{detections.length} detections</span>
       </div>
     </div>
   );
