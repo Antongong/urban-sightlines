@@ -11,6 +11,7 @@ export interface VideoSource {
   type: SourceType;
   isOnline: boolean;
   thumbnailUrl?: string;
+  url?: string;
 }
 
 export interface Detection {

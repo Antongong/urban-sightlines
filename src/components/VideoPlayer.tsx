@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize2 } from 'lucide-react';
 import { Detection, VideoSource } from '@/types';
 import { DetectionOverlay } from './DetectionOverlay';
@@ -13,13 +13,33 @@ interface VideoPlayerProps {
 }
 
 export function VideoPlayer({ source, detections }: VideoPlayerProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(300);
   const [isMuted, setIsMuted] = useState(true);
-  const duration = 300; // 5 minutes simulated
+
+  const isRealVideo = source?.type === 'uploaded' && source?.url;
 
   useEffect(() => {
-    if (!isPlaying) return;
+    if (isRealVideo && videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.play();
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isPlaying, isRealVideo]);
+
+  useEffect(() => {
+    if (isRealVideo && videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted, isRealVideo]);
+
+  // Simulated playback for non-uploaded sources
+  useEffect(() => {
+    if (isRealVideo || !isPlaying) return;
 
     const interval = setInterval(() => {
       setCurrentTime((prev) => {
@@ -29,10 +49,31 @@ export function VideoPlayer({ source, detections }: VideoPlayerProps) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, isRealVideo, duration]);
 
   const handleSeek = (time: number) => {
     setCurrentTime(time);
+    if (isRealVideo && videoRef.current) {
+      videoRef.current.currentTime = time;
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration);
+    }
+  };
+
+  const handleFullscreen = () => {
+    if (videoRef.current) {
+      videoRef.current.requestFullscreen();
+    }
   };
 
   if (!source) {
@@ -50,31 +91,41 @@ export function VideoPlayer({ source, detections }: VideoPlayerProps) {
     <div className="flex-1 flex flex-col gap-3">
       {/* Video area */}
       <div className="relative flex-1 bg-background rounded-lg overflow-hidden border border-border min-h-[400px]">
-        {/* Simulated video background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-background via-card to-background">
-          {/* Grid pattern */}
-          <div
-            className="absolute inset-0 opacity-5"
-            style={{
-              backgroundImage: `
-                linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
-                linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
-              `,
-              backgroundSize: '40px 40px',
-            }}
+        {isRealVideo ? (
+          <video
+            ref={videoRef}
+            src={source.url}
+            className="absolute inset-0 w-full h-full object-contain bg-black"
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onEnded={() => setIsPlaying(false)}
+            muted={isMuted}
+            playsInline
           />
-
-          {/* Simulated night vision / thermal gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/40" />
-
-          {/* Scan line effect */}
-          <div
-            className="absolute inset-0 pointer-events-none opacity-[0.03]"
-            style={{
-              background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(var(--foreground)) 2px, hsl(var(--foreground)) 4px)',
-            }}
-          />
-        </div>
+        ) : (
+          <>
+            {/* Simulated video background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-background via-card to-background">
+              <div
+                className="absolute inset-0 opacity-5"
+                style={{
+                  backgroundImage: `
+                    linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+                    linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
+                  `,
+                  backgroundSize: '40px 40px',
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/40" />
+              <div
+                className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                style={{
+                  background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(var(--foreground)) 2px, hsl(var(--foreground)) 4px)',
+                }}
+              />
+            </div>
+          </>
+        )}
 
         {/* Detection overlays */}
         <DetectionOverlay detections={detections} currentTime={currentTime} />
@@ -126,13 +177,13 @@ export function VideoPlayer({ source, detections }: VideoPlayerProps) {
               <Slider
                 value={[currentTime]}
                 max={duration}
-                step={1}
+                step={0.1}
                 onValueChange={([value]) => handleSeek(value)}
                 className="cursor-pointer"
               />
             </div>
 
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleFullscreen}>
               <Maximize2 className="w-4 h-4" />
             </Button>
           </div>

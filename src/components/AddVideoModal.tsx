@@ -17,6 +17,7 @@ export function AddVideoModal({ open, onClose, onAdd }: AddVideoModalProps) {
   const [location, setLocation] = useState('');
   const [streamUrl, setStreamUrl] = useState('');
   const [fileName, setFileName] = useState('');
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
 
   const handleAddStream = () => {
     if (!name || !streamUrl) return;
@@ -25,8 +26,8 @@ export function AddVideoModal({ open, onClose, onAdd }: AddVideoModalProps) {
   };
 
   const handleAddUpload = () => {
-    if (!name || !fileName) return;
-    onAdd({ name, location, type: 'uploaded' });
+    if (!name || !fileName || !fileUrl) return;
+    onAdd({ name, location, type: 'uploaded', url: fileUrl });
     resetAndClose();
   };
 
@@ -34,6 +35,8 @@ export function AddVideoModal({ open, onClose, onAdd }: AddVideoModalProps) {
     const file = e.target.files?.[0];
     if (file) {
       setFileName(file.name);
+      const url = URL.createObjectURL(file);
+      setFileUrl(url);
       if (!name) {
         setName(file.name.replace(/\.[^/.]+$/, ''));
       }
@@ -45,6 +48,7 @@ export function AddVideoModal({ open, onClose, onAdd }: AddVideoModalProps) {
     setLocation('');
     setStreamUrl('');
     setFileName('');
+    setFileUrl(null);
     onClose();
   };
 
