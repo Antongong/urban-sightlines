@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize2 } from 'lucide-react';
 import { Detection, VideoSource } from '@/types';
-import { DetectionOverlay } from './DetectionOverlay';
 import { DetectionTimeline } from './DetectionTimeline';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -126,9 +125,6 @@ export function VideoPlayer({ source, detections }: VideoPlayerProps) {
             </div>
           </>
         )}
-
-        {/* Detection overlays */}
-        <DetectionOverlay detections={detections} currentTime={currentTime} />
 
         {/* Camera info overlay */}
         <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
