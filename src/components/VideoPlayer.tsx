@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Volume2, VolumeX, Maximize2, Loader2, CheckCircle2, XCircle } from 'lucide-react';
-import { Detection, VideoSource } from '@/types';
-import { DetectionTimeline } from './DetectionTimeline';
+import { VideoSource } from '@/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -9,12 +8,11 @@ import { VSSAnalysisResult } from '@/services/vssApi';
 
 interface VideoPlayerProps {
   source: VideoSource | null;
-  detections: Detection[];
   lastAnalysis?: VSSAnalysisResult | null;
   isAnalyzing?: boolean;
 }
 
-export function VideoPlayer({ source, detections, lastAnalysis, isAnalyzing = false }: VideoPlayerProps) {
+export function VideoPlayer({ source, lastAnalysis, isAnalyzing = false }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -203,13 +201,6 @@ export function VideoPlayer({ source, detections, lastAnalysis, isAnalyzing = fa
         </div>
       </div>
 
-      {/* Timeline */}
-      <DetectionTimeline
-        detections={detections}
-        duration={duration}
-        currentTime={currentTime}
-        onSeek={handleSeek}
-      />
 
       {/* VSS Analysis Output - Always visible */}
       <div className="rounded-lg border border-border bg-card p-4">

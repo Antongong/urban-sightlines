@@ -4,7 +4,7 @@ import { CameraSidebar } from '@/components/CameraSidebar';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { AlertPanel } from '@/components/AlertPanel';
 import { AddVideoModal } from '@/components/AddVideoModal';
-import { videoSources as initialSources, generateDetections, alerts as mockAlerts, analysisSummary as mockAnalysisSummary } from '@/data/mockData';
+import { videoSources as initialSources, alerts as mockAlerts, analysisSummary as mockAnalysisSummary } from '@/data/mockData';
 import { VideoSource, Alert, AnalysisSummary, AnimalType } from '@/types';
 import { useVSSAnalysis } from '@/hooks/useVSSAnalysis';
 import { useToast } from '@/hooks/use-toast';
@@ -49,11 +49,6 @@ const Index = () => {
   const selectedSource = useMemo(
     () => sources.find((s) => s.id === selectedSourceId) || null,
     [sources, selectedSourceId]
-  );
-
-  const detections = useMemo(
-    () => (selectedSourceId ? generateDetections(selectedSourceId) : []),
-    [selectedSourceId]
   );
 
   // Update alerts and analysis when we get VSS results
@@ -155,7 +150,6 @@ const Index = () => {
         <main className="flex-1 p-4 overflow-hidden">
           <VideoPlayer 
             source={selectedSource} 
-            detections={detections} 
             lastAnalysis={lastAnalysis}
             isAnalyzing={isAnalyzing}
           />
