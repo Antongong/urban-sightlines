@@ -156,6 +156,11 @@ export async function deleteVSSFile(fileId: string): Promise<void> {
 /**
  * Summarize a video file for wildlife detection
  * Uses /summarize endpoint with custom prompts
+ * 
+ * Parameters sent:
+ * - prompt: Main summarization prompt
+ * - caption_summarization_prompt: Prompt for caption summarization
+ * - summary_duration: -1 for processing till end of stream (for files, processes entire video)
  */
 export async function summarizeVideo(fileId: string): Promise<VSSSummarizeResponse> {
   const response = await fetch(`${VSS_BASE_URL}/summarize`, {
@@ -168,9 +173,8 @@ export async function summarizeVideo(fileId: string): Promise<VSSSummarizeRespon
       id: fileId,
       prompt: WILDLIFE_PROMPT,
       caption_summarization_prompt: WILDLIFE_PROMPT,
-      summary_aggregation_prompt: WILDLIFE_PROMPT,
+      summary_duration: -1, // Process entire video (-1 = until EOS)
       stream: false,
-      chunk_duration: 10, // 10 second chunks
     }),
   });
 
