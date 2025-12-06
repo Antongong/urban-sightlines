@@ -59,36 +59,65 @@ function isJsonResponse(response: Response): boolean {
 
 /**
  * Check if the VSS backend is ready
- * Uses /health/ready endpoint as per VSS API docs
+ * Tries multiple health endpoints as per VSS API docs
  */
 export async function checkVSSHealth(): Promise<boolean> {
+  // Try /health/ready first
   try {
-    const response = await fetch(`${VSS_BASE_URL}/health/ready`, {
+    const readyResponse = await fetch(`${VSS_BASE_URL}/health/ready`, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
+      headers: { 'Accept': 'application/json' },
     });
     
-    // Check if we got a valid response
-    if (!response.ok) {
-      console.warn('VSS health check returned non-OK status:', response.status);
-      return false;
+    if (readyResponse.ok) {
+      if (isJsonResponse(readyResponse)) {
+        const data = await readyResponse.json();
+        if (data.status === 'ready' || data.ready === true || data.status === 'ok') {
+          console.log('VSS health check passed via /health/ready');
+          return true;
+        }
+      } else {
+        // Some backends return 200 with no body for health checks
+        console.log('VSS health check passed (200 OK from /health/ready)');
+        return true;
+      }
     }
-    
-    // Check if response is JSON (via-server returns JSON, Vite dev server returns HTML)
-    if (!isJsonResponse(response)) {
-      console.warn('VSS health check returned non-JSON response (VSS backend not available)');
-      return false;
-    }
-    
-    const data = await response.json();
-    // VSS returns { "status": "ready" } when healthy
-    return data.status === 'ready' || data.ready === true;
   } catch (error) {
-    console.error('VSS health check failed:', error);
-    return false;
+    console.warn('VSS /health/ready check failed, trying /health/live:', error);
   }
+
+  // Fallback to /health/live
+  try {
+    const liveResponse = await fetch(`${VSS_BASE_URL}/health/live`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+    });
+    
+    if (liveResponse.ok) {
+      console.log('VSS health check passed via /health/live');
+      return true;
+    }
+  } catch (error) {
+    console.warn('VSS /health/live check failed:', error);
+  }
+
+  // Final fallback: try to list files (if this works, VSS is available)
+  try {
+    const filesResponse = await fetch(`${VSS_BASE_URL}/files?purpose=vision`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+    });
+    
+    if (filesResponse.ok && isJsonResponse(filesResponse)) {
+      console.log('VSS health check passed via /files endpoint');
+      return true;
+    }
+  } catch (error) {
+    console.warn('VSS /files check failed:', error);
+  }
+
+  console.error('All VSS health checks failed - backend unavailable');
+  return false;
 }
 
 /**
@@ -96,6 +125,13 @@ export async function checkVSSHealth(): Promise<boolean> {
  * Uses /files endpoint with purpose="vision" and media_type="video"
  */
 export async function uploadVideoToVSS(file: File): Promise<VSSFile> {
+  // Check file size (warn if > 450MB to leave buffer for 500MB limit)
+  const maxSizeMB = 450;
+  const fileSizeMB = file.size / (1024 * 1024);
+  if (fileSizeMB > maxSizeMB) {
+    throw new Error(`Video file is too large (${fileSizeMB.toFixed(1)}MB). Maximum size is ${maxSizeMB}MB.`);
+  }
+
   const formData = new FormData();
   formData.append('file', file);
   formData.append('purpose', 'vision');
@@ -108,6 +144,10 @@ export async function uploadVideoToVSS(file: File): Promise<VSSFile> {
 
   if (!response.ok) {
     const errorText = await response.text();
+    // Provide specific error messages for common issues
+    if (response.status === 413) {
+      throw new Error('Video file is too large for the server. Please try a smaller video.');
+    }
     throw new Error(`Failed to upload file to VSS: ${response.status} - ${errorText}`);
   }
 
@@ -157,9 +197,10 @@ export async function deleteVSSFile(fileId: string): Promise<void> {
  * Summarize a video file for wildlife detection
  * Uses /summarize endpoint with custom prompts
  * 
- * Parameters sent:
+ * Parameters sent (as per API docs):
  * - prompt: Main summarization prompt
  * - caption_summarization_prompt: Prompt for caption summarization
+ * - summary_aggregation_prompt: Prompt for aggregating summaries
  * - summary_duration: -1 for processing till end of stream (for files, processes entire video)
  */
 export async function summarizeVideo(fileId: string): Promise<VSSSummarizeResponse> {
@@ -173,6 +214,7 @@ export async function summarizeVideo(fileId: string): Promise<VSSSummarizeRespon
       id: fileId,
       prompt: WILDLIFE_PROMPT,
       caption_summarization_prompt: WILDLIFE_PROMPT,
+      summary_aggregation_prompt: WILDLIFE_PROMPT,
       summary_duration: -1, // Process entire video (-1 = until EOS)
       stream: false,
     }),
@@ -180,6 +222,10 @@ export async function summarizeVideo(fileId: string): Promise<VSSSummarizeRespon
 
   if (!response.ok) {
     const errorText = await response.text();
+    // Provide specific error messages for common issues
+    if (response.status === 413) {
+      throw new Error('Video file is too large. Please try a smaller video (max 500MB).');
+    }
     throw new Error(`Failed to summarize video: ${response.status} - ${errorText}`);
   }
 
