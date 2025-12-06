@@ -211,6 +211,7 @@ export async function summarizeVideo(fileId: string): Promise<VSSSummarizeRespon
       'Accept': 'application/json',
     },
     body: JSON.stringify({
+      model: 'vila',
       id: fileId,
       prompt: WILDLIFE_PROMPT,
       caption_summarization_prompt: WILDLIFE_PROMPT,
