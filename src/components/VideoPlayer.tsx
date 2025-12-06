@@ -230,8 +230,8 @@ export function VideoPlayer({ source, lastAnalysis, isAnalyzing = false }: Video
                 )}
                 <span className="text-sm font-medium">
                   {lastAnalysis.wildlifeDetected 
-                    ? `Wildlife Detected${lastAnalysis.animalType ? `: ${lastAnalysis.animalType}` : ''}`
-                    : 'No Wildlife Detected'
+                    ? `${lastAnalysis.animalType ? `A ${lastAnalysis.animalType}` : 'This'} is a wild animal`
+                    : 'This is not a wild animal'
                   }
                 </span>
               </div>
