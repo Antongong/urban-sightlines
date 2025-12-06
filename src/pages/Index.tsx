@@ -28,11 +28,18 @@ const Index = () => {
     analyzeLiveStream 
   } = useVSSAnalysis();
 
-  // Check VSS connection on mount and when modal opens
+  // Check VSS connection on mount and periodically (every 30s)
   useEffect(() => {
     checkConnection();
+    
+    const intervalId = setInterval(() => {
+      checkConnection();
+    }, 30000); // Check every 30 seconds
+    
+    return () => clearInterval(intervalId);
   }, [checkConnection]);
 
+  // Also check when modal opens
   useEffect(() => {
     if (isAddModalOpen) {
       checkConnection();
