@@ -1,0 +1,15 @@
+# Add this to your existing docker-compose.yaml or use as override
+# docker-compose -f docker-compose.yaml -f docker-compose.override.yaml up
+
+services:
+  wildlife-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${DASHBOARD_PORT:-3000}:80"
+    environment:
+      - BACKEND_PORT=${BACKEND_PORT:-8000}
+    depends_on:
+      - via-server
+    restart: unless-stopped
