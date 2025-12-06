@@ -24,13 +24,14 @@ const Index = () => {
     [selectedSourceId]
   );
 
-  const handleAddSource = (source: { name: string; location: string; type: 'live' | 'uploaded' }) => {
+  const handleAddSource = (source: { name: string; location: string; type: 'live' | 'uploaded'; url?: string }) => {
     const newSource: VideoSource = {
       id: `custom-${Date.now()}`,
       name: source.name,
       location: source.location || 'Custom Location',
       type: source.type,
       isOnline: true,
+      url: source.url,
     };
     setSources((prev) => [...prev, newSource]);
     setSelectedSourceId(newSource.id);
